@@ -374,9 +374,6 @@ class Send_Notify(object):
         else:
             print("企业微信推送失败！错误信息如下：\n", response)
 
-        def iyuu(self, title:str, content:str) -> None:
-            pass
-
 class We_Com(object):
     def __init__(self, corpid, corpsecret, agentid):
         self.CORPID     = corpid
