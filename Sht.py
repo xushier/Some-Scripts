@@ -13,8 +13,57 @@ export cd2_url=""
 export cd2_usr=""
 export cd2_pwd=""
 export save_path=""
-export QYWX=""
 '''
+
+"""通知参数
+
+    BARK_PUSH         # bark IP 或设备码，例：https://api.day.app/DxHcxxxxxRxxxxxxcm/
+    BARK_ARCHIVE      # bark 推送是否存档
+    BARK_GROUP        # bark 推送分组
+    BARK_SOUND        # bark 推送声音
+    BARK_ICON         # bark 推送图标
+
+    DD_BOT_SECRET     # 钉钉机器人的 DD_BOT_SECRET
+    DD_BOT_TOKEN      # 钉钉机器人的 DD_BOT_TOKEN
+
+    FSKEY             # 飞书机器人的 FSKEY
+
+    GOBOT_URL         # go-cqhttp
+                        # 推送到个人QQ：http://127.0.0.1/send_private_msg
+                        # 群：http://127.0.0.1/send_group_msg
+    GOBOT_QQ          # go-cqhttp 的推送群或用户
+                        # GOBOT_URL 设置 /send_private_msg 时填入 user_id=个人QQ
+                        #               /send_group_msg   时填入 group_id=QQ群
+    GOBOT_TOKEN       # go-cqhttp 的 access_token
+
+    GOTIFY_URL        # gotify地址,如https://push.example.de:8080
+    GOTIFY_TOKEN      # gotify的消息应用token
+    GOTIFY_PRIORITY   # 推送消息优先级,默认为0
+
+    IGOT_PUSH_KEY     # iGot 聚合推送的 IGOT_PUSH_KEY
+
+    PUSH_KEY          # server 酱的 PUSH_KEY，兼容旧版与 Turbo 版
+
+    DEER_KEY          # PushDeer 的 PUSHDEER_KEY
+    
+    PUSH_PLUS_TOKEN   # push+ 微信推送的用户令牌
+    PUSH_PLUS_USER    # push+ 微信推送的群组编码
+
+    QMSG_KEY          # qmsg 酱的 QMSG_KEY
+    QMSG_TYPE         # qmsg 酱的 QMSG_TYPE
+
+    QYWX_AM           # 企业微信应用
+
+    QYWX_KEY          # 企业微信机器人
+
+    TG_BOT_TOKEN      # tg 机器人的 TG_BOT_TOKEN，例：1407203283:AAG9rt-6RDaaX0HBLZQq0laNOh898iFYaRQ
+    TG_USER_ID        # tg 机器人的 TG_USER_ID，例：1434078534
+    TG_API_HOST       # tg 代理 api
+    TG_PROXY_AUTH     # tg 代理认证参数
+    TG_PROXY_HOST     # tg 机器人的 TG_PROXY_HOST
+    TG_PROXY_PORT     # tg 机器人的 TG_PROXY_PORT
+"""
+
 
 import time
 import logging
@@ -28,14 +77,13 @@ from pymongo import MongoClient, errors
 from datetime import datetime, timedelta
 from clouddrive import CloudDriveClient
 from CloudDrive_pb2 import AddOfflineFileRequest
-
+from notify import send
 
 sht_ql_config = {
     'cd2_url': '',
     'cd2_usr': '',
     'cd2_pwd': '',
-    'save_path': '',
-    'QYWX': ''
+    'save_path': ''
 }
 
 for c in sht_ql_config:
@@ -74,7 +122,6 @@ class AddSht:
         self.cd2_pwd        = sht_ql_config['cd2_pwd']
         self.save_path      = sht_ql_config['save_path']
         self.cd2            = CloudDriveClient(self.cd2_url, self.cd2_usr, self.cd2_pwd)
-        self.notify         = Send_Notify()
         self.notify_content = []
         self.clean          = clean
 
@@ -174,7 +221,7 @@ class AddSht:
             if start_date <= end_date:
                 return start_date, end_date
             else:
-                raise ValueError(f"日期范围输入错误：{start_date} - {end_date}")
+                raise KeyError(f"日期范围输入错误：{start_date} - {end_date}")
         else:
             # 如果没有逗号，则假设第二个参数是一个单独的日期
             range_date = self.__parse_date__(self.__date_judge__(target_date))
@@ -313,129 +360,15 @@ class AddSht:
         self.logger.info(f"清理完成，共清理 {count} 个垃圾文件")
         self.notify_content.append(f"清理完成，共清理 {count} 个垃圾文件")
 
-    def notify_wechat(self):
+    def send_notify(self, title="hahaha~~~", content="heiheihei~~~"):
         """
         微信通知。
         """
         if self.notify_content:
             title   = f"【啬骅自动化】"
             content = "\n".join(self.notify_content)
-            self.notify.wechat(title, content)
+            send(title, content)
 
-
-
-class Send_Notify(object):
-
-    def __init__(self) -> None:
-        self.pushplus_url = 'http://www.pushplus.plus/send?' + 'token='
-
-    def pushplus(self, title:str, content:str) -> None:
-        if not sht_ql__config.get("PUSH_PLUS_TOKEN"):
-            print("PUSHPLUS 服务的 PUSH_PLUS_TOKEN 未设置!!\n取消推送")
-            return
-        print("PUSHPLUS 服务启动")
-
-        pushplus_headers = {'Content-Type':'application/json'}
-        pushplus_req = requests.get(self.pushplus_url + sht_ql__config.get("PUSH_PLUS_TOKEN") +'&title='+title+'&content='+content,headers=pushplus_headers)
-        if pushplus_req.status_code == 200:
-            print("通知发送成功！")
-        else:
-            print("通知发送失败！")
-
-    def wechat(self, title: str, content: str) -> None:
-        """
-        通过 企业微信 APP 推送消息。
-        """
-        if not sht_ql_config.get("QYWX"):
-            print("QYWX 未设置!!\n取消推送")
-            return
-        QYWX_AY = re.split(",", sht_ql_config.get("QYWX"))
-        if 4 < len(QYWX_AY) > 5:
-            print("QYWX 设置错误!!\n取消推送")
-            return
-        # print("企业微信 APP 服务启动")
-
-        corpid     = QYWX_AY[0]
-        corpsecret = QYWX_AY[1]
-        touser     = QYWX_AY[2]
-        agentid    = QYWX_AY[3]
-        try:
-            media_id = QYWX_AY[4]
-        except IndexError:
-            media_id = ""
-        wx = We_Com(corpid, corpsecret, agentid)
-        # 如果没有配置 media_id 默认就以 text 方式发送
-        if not media_id:
-            message  = title + "\n\n" + content
-            response = wx.send_text(message, touser)
-        else:
-            response = wx.send_mpnews(title, content, media_id, touser)
-
-        if response == "ok":
-            # print("企业微信推送成功！")
-            pass
-        else:
-            print("企业微信推送失败！错误信息如下：\n", response)
-
-class We_Com(object):
-    def __init__(self, corpid, corpsecret, agentid):
-        self.CORPID     = corpid
-        self.CORPSECRET = corpsecret
-        self.AGENTID    = agentid
-
-    def get_access_token(self):
-        url = "https://qyapi.weixin.qq.com/cgi-bin/gettoken"
-        values = {
-            "corpid": self.CORPID,
-            "corpsecret": self.CORPSECRET,
-        }
-        req  = requests.post(url, params=values)
-        data = json.loads(req.text)
-        return data["access_token"]
-
-    def send_text(self, message, touser="@all"):
-        send_url = (
-            "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token="
-            + self.get_access_token()
-        )
-        send_values = {
-            "touser": touser,
-            "msgtype": "text",
-            "agentid": self.AGENTID,
-            "text": {"content": message},
-            "safe": "0",
-        }
-        send_msges = bytes(json.dumps(send_values), "utf-8")
-        respone = requests.post(send_url, send_msges)
-        respone = respone.json()
-        return respone["errmsg"]
-
-    def send_mpnews(self, title, message, media_id, touser="@all"):
-        send_url = (
-            "https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token="
-            + self.get_access_token()
-        )
-        send_values = {
-            "touser": touser,
-            "msgtype": "mpnews",
-            "agentid": self.AGENTID,
-            "mpnews": {
-                "articles": [
-                    {
-                        "title": title,
-                        "thumb_media_id": media_id,
-                        "author": "Author",
-                        "content_source_url": "",
-                        "content": message.replace("\n", "<br/>"),
-                        "digest": message,
-                    }
-                ]
-            },
-        }
-        send_msges = bytes(json.dumps(send_values), "utf-8")
-        respone = requests.post(send_url, send_msges)
-        respone = respone.json()
-        return respone["errmsg"]
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:
@@ -451,5 +384,6 @@ if __name__ == "__main__":
     sh.logger.info(f"###############本次执行开始###############")
     sh.cd2_add()
     sh.logger.info(f"+++++++++++++++++++++++++++++++++++++++++")
-    sh.notify_wechat()
+    sh.send_notify()
     sh.logger.info(f"###############本次执行结束###############\n\n")
+
