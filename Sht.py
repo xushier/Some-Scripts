@@ -440,6 +440,7 @@ class We_Com(object):
 if __name__ == "__main__":
     if len(sys.argv) == 2:
         target_date = sys.argv[1]
+        target_category = ""
     elif len(sys.argv) == 3:
         target_date     = sys.argv[1]
         target_category = sys.argv[2]
