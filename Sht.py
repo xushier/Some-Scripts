@@ -171,7 +171,10 @@ class AddSht:
             # 解析起始和结束日期为日期对象
             start_date = self.__parse_date__(start_str)
             end_date   = self.__parse_date__(end_str)
-            return start_date, end_date
+            if start_date <= end_date:
+                return start_date, end_date
+            else:
+                raise ValueError(f"日期范围输入错误：{start_date} - {end_date}")
         else:
             # 如果没有逗号，则假设第二个参数是一个单独的日期
             range_date = self.__parse_date__(self.__date_judge__(target_date))
@@ -250,7 +253,7 @@ class AddSht:
             target_table = self.db[category]
             cursor = target_table.find().sort("date", 1)
             for item in cursor:
-                if self.__is_date_in_range_or_equal__(item["date"]):
+                if self.__is_date_in_range_or_equal__(item["date"]) and item["magnet"].startswith('magnet'):
                     magnets_list.add(item["magnet"])
             magnets_dict[category_zh] = magnets_list
         self.__save_info_to_file__(magnets_dict)
