@@ -45,7 +45,7 @@ export save_path=""
     PUSH_KEY          # server 酱的 PUSH_KEY，兼容旧版与 Turbo 版
 
     DEER_KEY          # PushDeer 的 PUSHDEER_KEY
-    
+
     PUSH_PLUS_TOKEN   # push+ 微信推送的用户令牌
     PUSH_PLUS_USER    # push+ 微信推送的群组编码
 
@@ -77,7 +77,7 @@ from pymongo import MongoClient, errors
 from datetime import datetime, timedelta
 from clouddrive import CloudDriveClient
 from CloudDrive_pb2 import AddOfflineFileRequest
-from notify import send
+from __notifier import send
 
 sht_ql_config = {
     'cd2_url': '',
@@ -87,8 +87,8 @@ sht_ql_config = {
 }
 
 for c in sht_ql_config:
-    if os.getenv(c):
-        v = os.getenv(c)
+    v = os.getenv(c)
+    if v:
         sht_ql_config[c] = v
     else:
         raise KeyError(f"{c} 未设置！")
@@ -125,7 +125,7 @@ class AddSht:
         self.notify_content = []
         self.clean          = clean
 
-        self.category_dict   = {
+        self.category_dict  = {
             '4k_video': '4K',
             'anime_originate': '动漫',
             'asia_codeless_originate': '亚洲无码',
@@ -137,6 +137,11 @@ class AddSht:
             'vr_video': 'VR',
             'three_levels_photo': '三级'
         }
+
+        for l in self.category_dict:
+            m = os.getenv(l)
+            if m:
+                self.category_dict[l] = m
 
         # 日志系统的初始化和配置
         log_path     = "sht-log"
@@ -326,11 +331,19 @@ class AddSht:
                 torrent_str   = "\n".join(value)
                 save_path = f"{self.save_path}/SHT/{category_name}/{d}"
                 self.cd2.fs.makedirs(save_path, exist_ok=True)
-                self.cd2.AddOfflineFiles(AddOfflineFileRequest(urls=torrent_str, toFolder=save_path))
+                try:
+                    self.cd2.AddOfflineFiles(AddOfflineFileRequest(urls=torrent_str, toFolder=save_path))
+                except grpc.RpcError as e:
+                    if isinstance(e, grpc.Channel.InactiveRpcError):
+                        print("任务已存在:", e)
+                    else:
+                        print("捕获到RpcError错误:", e)
+                except Exception as e:
+                    print("捕获到异常:", e)
                 if len(self.magnets_dict[key]):
-                    print(f"{category_name} 添加完成，共 {len(self.magnets_dict[key])} 个")
-                    self.notify_content.append(f"{category_name} 共添加 {len(self.magnets_dict[key])} 个资源")
-                self.logger.info(f"{category_name} 共添加 {len(self.magnets_dict[key])} 个资源")
+                    print(f"追缉到 {len(self.magnets_dict[key])} 个 {category_name} 大姐姐")
+                    self.notify_content.append(f"追缉到 {len(self.magnets_dict[key])} 个 {category_name} 大姐姐")
+                self.logger.info(f"追缉到 {len(self.magnets_dict[key])} 个 {category_name} 大姐姐")
                 if self.clean:
                     self.clean_ads(save_path)
                 time.sleep(2)
@@ -365,7 +378,7 @@ class AddSht:
         微信通知。
         """
         if self.notify_content:
-            title   = f"【啬骅自动化】"
+            title   = f"【追缉大姐姐】"
             content = "\n".join(self.notify_content)
             send(title, content)
 
