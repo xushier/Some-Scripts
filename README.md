@@ -5,7 +5,7 @@
 1. - 打开青龙面板，添加以下任务。
    - 名称随便输入；
    - 定时规则随便输入，若不知道怎么输入，输入0 0 * * *即可；
-   - 命令/脚本输入：`ql repo https://github.com/xushier/Some-Scripts.git "Sht" "__notifier"`
+   - 命令/脚本输入：`ql repo https://github.com/xushier/Some-Scripts.git "Sht" "" "__notifier"`
 2. 添加后点击右侧按钮运行一次。添加后界面会多出来一个名称为 Sht.py 的任务。
 3. 进入青龙面板的依赖管理界面，选择 Python3 ，名称输入 pymongo ，确定后等待依赖安装完成。按照以上操作再安装 requests、clouddrive
 4. 进入青龙面板的环境变量界面，点击创建变量，依次添加名称为 cd2_url、cd2_usr、cd2_pwd、save_path 的环境变量，值分别为 Clouddrive 的访问地址、用户名、密码，以及在 Clouddrive 里看到的要保存到的路径。
