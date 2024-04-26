@@ -143,6 +143,9 @@ class AddSht:
             if m:
                 self.category_dict[l] = m
 
+        if os.getenv("uhd_video"):
+            self.category_dict['4k_video'] = os.getenv("uhd_video")
+
         # 日志系统的初始化和配置
         log_path     = "sht-log"
         max_log_size = 2 * 1024 * 1024
@@ -256,7 +259,7 @@ class AddSht:
         判断输入的分类名称是否在 category_dict 中。
         """
         categories = set(self.category_dict.values())
-        if isinstance(category_name, set):
+        if isinstance(category_name, (list, set)):
             for c in category_name:
                 if c not in categories:
                     raise ValueError(f"{category_name} 输入错误，请检查！")
@@ -273,7 +276,7 @@ class AddSht:
         if not self.category:
             categories = set(self.category_dict.values())
         elif "-" in self.category:
-            categories = set(self.category.split(","))
+            categories = set(self.category.split("-"))
         else:
             categories = [self.category]
         self.__is_in_category_dict__(categories)
@@ -295,19 +298,36 @@ class AddSht:
         """
         获取目标日期的资源。
         """
+        # magnets_dict = {}
+        # for category_zh in self.target_category:
+        #     for key, value in self.category_dict.items():
+        #         if category_zh == value:
+        #             category = key
+        #             break
+        #     magnets_list = set()
+        #     target_table = self.db[category]
+        #     cursor = target_table.find().sort("date", 1)
+        #     for item in cursor:
+        #         if self.__is_date_in_range_or_equal__(item["date"]) and item["magnet"].startswith('magnet'):
+        #             magnets_list.add(item["magnet"])
+        #     magnets_dict[category_zh] = magnets_list
+        # self.__save_info_to_file__(magnets_dict)
+        # return magnets_dict
+
         magnets_dict = {}
+        category_list = set()
         for category_zh in self.target_category:
             for key, value in self.category_dict.items():
                 if category_zh == value:
-                    category = key
-                    break
-            magnets_list = set()
-            target_table = self.db[category]
-            cursor = target_table.find().sort("date", 1)
-            for item in cursor:
-                if self.__is_date_in_range_or_equal__(item["date"]) and item["magnet"].startswith('magnet'):
-                    magnets_list.add(item["magnet"])
-            magnets_dict[category_zh] = magnets_list
+                    category_list.add(key)
+            for c in category_list:
+                magnets_list = set()
+                target_table = self.db[c]
+                cursor = target_table.find().sort("date", 1)
+                for item in cursor:
+                    if self.__is_date_in_range_or_equal__(item["date"]) and item["magnet"].startswith('magnet'):
+                        magnets_list.add(item["magnet"])
+                magnets_dict[category_zh] = magnets_list
         self.__save_info_to_file__(magnets_dict)
         return magnets_dict
 
