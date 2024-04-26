@@ -17,7 +17,7 @@
 6. 需要企业微信通知需要添加变量 QYWX，格式参考青龙面板：`corpid,corpsecret,touser(注:多个成员ID使用|隔开),agentid,消息类型(选填,不填默认文本消息类型) 注意用,号隔开(英文输入法的逗号)，例如：wwcfrs,B-76WERQ,qinglong,1000001,2COat`
 7. 需要企业微信可信代理需要添加变量 QYWX_PROXY
 8. 若需要自定义保存分类文件夹名。可添加以下变量：
-```4k_video
+```uhd_video
 anime_originate
 asia_codeless_originate
 asia_mosaic_originate
