@@ -298,38 +298,38 @@ class AddSht:
         """
         获取目标日期的资源。
         """
-        # magnets_dict = {}
-        # for category_zh in self.target_category:
-        #     for key, value in self.category_dict.items():
-        #         if category_zh == value:
-        #             category = key
-        #             break
-        #     magnets_list = set()
-        #     target_table = self.db[category]
-        #     cursor = target_table.find().sort("date", 1)
-        #     for item in cursor:
-        #         if self.__is_date_in_range_or_equal__(item["date"]) and item["magnet"].startswith('magnet'):
-        #             magnets_list.add(item["magnet"])
-        #     magnets_dict[category_zh] = magnets_list
-        # self.__save_info_to_file__(magnets_dict)
-        # return magnets_dict
-
         magnets_dict = {}
-        category_list = set()
         for category_zh in self.target_category:
             for key, value in self.category_dict.items():
                 if category_zh == value:
-                    category_list.add(key)
-            for c in category_list:
-                magnets_list = set()
-                target_table = self.db[c]
-                cursor = target_table.find().sort("date", 1)
-                for item in cursor:
-                    if self.__is_date_in_range_or_equal__(item["date"]) and item["magnet"].startswith('magnet'):
-                        magnets_list.add(item["magnet"])
-                magnets_dict[category_zh] = magnets_list
+                    category = key
+                    break
+            magnets_list = set()
+            target_table = self.db[category]
+            cursor = target_table.find().sort("date", 1)
+            for item in cursor:
+                if self.__is_date_in_range_or_equal__(item["date"]) and item["magnet"].startswith('magnet'):
+                    magnets_list.add(item["magnet"])
+            magnets_dict[category_zh] = magnets_list
         self.__save_info_to_file__(magnets_dict)
         return magnets_dict
+
+        # magnets_dict = {}
+        # category_list = set()
+        # for category_zh in self.target_category:
+        #     for key, value in self.category_dict.items():
+        #         if category_zh == value:
+        #             category_list.add(key)
+        #     for c in category_list:
+        #         magnets_list = set()
+        #         target_table = self.db[c]
+        #         cursor = target_table.find().sort("date", 1)
+        #         for item in cursor:
+        #             if self.__is_date_in_range_or_equal__(item["date"]) and item["magnet"].startswith('magnet'):
+        #                 magnets_list.add(item["magnet"])
+        #         magnets_dict[category_zh] = magnets_list
+        # self.__save_info_to_file__(magnets_dict)
+        # return magnets_dict
 
     def cd2_add(self):
         """
