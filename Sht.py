@@ -323,23 +323,6 @@ class AddSht:
         self.__save_info_to_file__(magnets_dict)
         return magnets_dict
 
-        # magnets_dict = {}
-        # category_list = set()
-        # for category_zh in self.target_category:
-        #     for key, value in self.category_dict.items():
-        #         if category_zh == value:
-        #             category_list.add(key)
-        #     for c in category_list:
-        #         magnets_list = set()
-        #         target_table = self.db[c]
-        #         cursor = target_table.find().sort("date", 1)
-        #         for item in cursor:
-        #             if self.__is_date_in_range_or_equal__(item["date"]) and item["magnet"].startswith('magnet'):
-        #                 magnets_list.add(item["magnet"])
-        #         magnets_dict[category_zh] = magnets_list
-        # self.__save_info_to_file__(magnets_dict)
-        # return magnets_dict
-
     def cd2_add(self):
         """
         添加种子到 115。
@@ -367,33 +350,37 @@ class AddSht:
                         print("任务已存在:", e)
                     else:
                         print("捕获到RpcError错误:", e)
+                    continue
                 except Exception as e:
                     print("捕获到异常:", e)
+                    continue
                 if len(self.magnets_dict[key]):
                     print(f"追缉到 {len(self.magnets_dict[key])} 个 {category_name} 大姐姐")
                     self.notify_content.append(f"追缉到 {len(self.magnets_dict[key])} 个 {category_name} 大姐姐")
                 self.logger.info(f"追缉到 {len(self.magnets_dict[key])} 个 {category_name} 大姐姐")
-                time.sleep(2)
-                mount_path = save_path.replace(self.save_path, self.mount_path)
-                self.clean_ads(mount_path)
+                if len(self.magnets_dict[key]) > 0:
+                    print("已添加离线，等待 10 秒")
+                    time.sleep(10)
+                    mount_path = save_path.replace(self.save_path, self.mount_path)
+                    self.clean_ads(mount_path)
         else:
             print("本次没有新资源")
-        if self.clean:
+        print(self.clean)
+        if self.clean == True:
             self.clean_ads()
 
     def clean_ads(self, clean_path="", min_size_mb=""):
         """
         清理垃圾文件。
         """
-        print(f"\n开始清理")
         if not clean_path:
             clean_path  = f"{self.mount_path}/SHT"
+        print(f"开始清理 {clean_path}\n")
         if not min_size_mb:
             min_size_mb = self.clean_min_size
         count = 0
-        min_size_bytes = min_size_mb * 1024
+        min_size_bytes = min_size_mb * 1024 * 1024
         now = datetime.now()
-        print(clean_path)
         for root, dirs, files in os.walk(clean_path):
             for f in files:
                 file_path = os.path.join(root, f)
@@ -414,8 +401,8 @@ class AddSht:
                     count += 1
                     os.rmdir(full_path)
                     self.logger.info(f"删除文件夹{count}: {full_path}")
-        self.logger.info(f"清理完成，共清理 {count} 个垃圾文件(夹)")
-        self.notify_content.append(f"清理完成，共清理 {count} 个垃圾文件(夹)")
+        self.logger.info(f"共清理 {count} 个垃圾文件(夹)")
+        self.notify_content.append(f"共清理 {count} 个垃圾文件(夹)\n")
 
     # def clean_ads(self, path):
     #     """
