@@ -9,11 +9,10 @@
 2. 添加后点击右侧按钮运行一次。添加后界面会多出来一个名称为 Sht.py 的任务。
 3. 进入青龙面板的依赖管理界面，选择 Python3 ，名称输入 pymongo ，确定后等待依赖安装完成。按照以上操作再安装 requests、clouddrive
 4. 进入青龙面板的环境变量界面，点击创建变量，依次添加名称为 cd2_url、cd2_usr、cd2_pwd、save_path、mount_path、clean_all 的环境变量，值分别为 Clouddrive 的访问地址、用户名、密码、在 Clouddrive 里看到的要保存到的路径、save_path 对应挂载到本地的路径，以及清理垃圾是否清理所有，默认为 False。
-5. 任务命令 `task xushier_Some-Scripts/Sht.py` 后可传入三个参数。 
+5. 任务命令 `task xushier_Some-Scripts/Sht.py` 后可传入两个参数。 
    - 第一个为日期。单日：2024-01-01     多日：2024-01-01,2024-01-05    默认：昨日
    - 第二个为分类。单类：动漫           多类：动漫-4K-VR                默认：所有
-   - 第三个为清理。默认为 False，关闭清理。开启为 True
-   - 例：`task xushier_Some-Scripts/Sht.py 2024-01-01,2024-01-05 动漫-4K-VR True`
+   - 例：`task xushier_Some-Scripts/Sht.py 2024-01-01,2024-01-05 动漫-4K-VR`
 6. 需要企业微信通知需要添加变量 QYWX，格式参考青龙面板：`corpid,corpsecret,touser(注:多个成员ID使用|隔开),agentid,消息类型(选填,不填默认文本消息类型) 注意用,号隔开(英文输入法的逗号)，例如：wwcfrs,B-76WERQ,qinglong,1000001,2COat`
 7. 需要企业微信可信代理需要添加变量 QYWX_PROXY
 8. 若需要自定义保存分类文件夹名。可添加以下变量：
