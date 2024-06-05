@@ -14,6 +14,7 @@ export cd2_usr=""
 export cd2_pwd=""
 export save_path=""
 export mount_path=""
+export clean_all=""
 '''
 
 """通知参数
