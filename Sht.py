@@ -13,6 +13,7 @@ export cd2_url=""
 export cd2_usr=""
 export cd2_pwd=""
 export save_path=""
+export mount_path=""
 '''
 
 """通知参数
@@ -83,11 +84,15 @@ sht_ql_config = {
     'cd2_url': '',
     'cd2_usr': '',
     'cd2_pwd': '',
-    'save_path': ''
+    'save_path': '',
+    'mount_path': '',
+    'clean_all': ''
 }
 
 for c in sht_ql_config:
     v = os.getenv(c)
+    if c = "clean_all" and not v:
+        sht_ql_config[c] = False
     if v:
         sht_ql_config[c] = v
     else:
@@ -96,7 +101,7 @@ for c in sht_ql_config:
 
 class AddSht:
 
-    def __init__(self, target_date = "", target_category = "", clean = False):
+    def __init__(self, target_date = "", target_category = "", clean_all = sht_ql_config['clean_all']):
         self.mongodb = MongoClient("mongodb+srv://readonly:cS9NSuiJ1ebHnUL0@cluster0.8mosa.mongodb.net/Cluster0?retryWrites=true&w=majority")
         try:
             self.db = self.mongodb["sehuatang"]
@@ -121,9 +126,11 @@ class AddSht:
         self.cd2_usr        = sht_ql_config['cd2_usr']
         self.cd2_pwd        = sht_ql_config['cd2_pwd']
         self.save_path      = sht_ql_config['save_path']
+        self.mount_path     = sht_ql_config['mount_path']
         self.cd2            = CloudDriveClient(self.cd2_url, self.cd2_usr, self.cd2_pwd)
         self.notify_content = []
-        self.clean          = clean
+        self.clean          = clean_all
+        self.clean_min_size = 100
 
         self.category_dict  = {
             '4k_video': '4K',
@@ -364,34 +371,72 @@ class AddSht:
                     print(f"追缉到 {len(self.magnets_dict[key])} 个 {category_name} 大姐姐")
                     self.notify_content.append(f"追缉到 {len(self.magnets_dict[key])} 个 {category_name} 大姐姐")
                 self.logger.info(f"追缉到 {len(self.magnets_dict[key])} 个 {category_name} 大姐姐")
-                if self.clean:
-                    self.clean_ads(save_path)
                 time.sleep(2)
+                mount_path = save_path.replace(self.save_path, self.mount_path)
+                self.clean_ads(mount_path)
         else:
             print("本次没有新资源")
+        if self.clean:
+            self.clean_ads()
 
-    def clean_ads(self, path):
+    def clean_ads(self, clean_path="", min_size_mb=""):
         """
         清理垃圾文件。
         """
-        self.cd2.fs.chdir(path)
         print(f"\n开始清理")
+        if not clean_path:
+            clean_path  = f"{self.mount_path}/SHT"
+        if not min_size_mb:
+            min_size_mb = self.clean_min_size
         count = 0
-        for info in self.filter_file:
-            for path in self.cd2.fs.rglob(info):
-                print(path)
-                count += 1
-                try:
-                    self.cd2.fs.remove(path)
-                except OSError as e:
-                    print("遇到错误：", e)
-                except FileNotFoundError as e:
-                    print("遇到错误：", e)
-                except Exception as e:
-                    print("遇到错误：", e)
-            time.sleep(3)
-        self.logger.info(f"清理完成，共清理 {count} 个垃圾文件")
-        self.notify_content.append(f"清理完成，共清理 {count} 个垃圾文件")
+        min_size_bytes = min_size_mb * 1024
+        now = datetime.now()
+        print(clean_path)
+        for root, dirs, files in os.walk(clean_path):
+            for f in files:
+                file_path = os.path.join(root, f)
+                if os.path.getsize(file_path) < min_size_bytes:
+                    try:
+                        count += 1
+                        os.remove(file_path)
+                        self.logger.info(f"删除文件{count}: {file_path}")
+                    except Exception as e:
+                        print(f"删除错误：{file_path}: {e}")
+            for d in dirs:
+                full_path = os.path.join(root, d)
+                if os.listdir(full_path):
+                    continue
+                mod_time = datetime.fromtimestamp(os.path.getmtime(full_path))
+                delta = now - mod_time
+                if delta.days > 3:
+                    count += 1
+                    os.rmdir(full_path)
+                    self.logger.info(f"删除文件夹{count}: {full_path}")
+        self.logger.info(f"清理完成，共清理 {count} 个垃圾文件(夹)")
+        self.notify_content.append(f"清理完成，共清理 {count} 个垃圾文件(夹)")
+
+    # def clean_ads(self, path):
+    #     """
+    #     清理垃圾文件。
+    #     """
+    #     self.cd2.fs.chdir(path)
+    #     print(f"\n开始清理")
+    #     count = 0
+    #     for info in self.filter_file:
+    #         for path in self.cd2.fs.rglob(info):
+    #             print(path)
+    #             count += 1
+    #             try:
+    #                 self.cd2.fs.remove(path)
+    #             except OSError as e:
+    #                 print("遇到错误：", e)
+    #             except FileNotFoundError as e:
+    #                 print("遇到错误：", e)
+    #             except Exception as e:
+    #                 print("遇到错误：", e)
+    #         time.sleep(3)
+    #     self.logger.info(f"清理完成，共清理 {count} 个垃圾文件")
+    #     self.notify_content.append(f"清理完成，共清理 {count} 个垃圾文件")
 
     def send_notify(self, title="hahaha~~~", content="heiheihei~~~"):
         """
@@ -415,8 +460,9 @@ if __name__ == "__main__":
         target_category = ""
     sh = AddSht(target_date, target_category)
     sh.logger.info(f"###############本次执行开始###############")
-    sh.cd2_add()
+    # sh.cd2_add()
+    sh.clean_ads()
     sh.logger.info(f"+++++++++++++++++++++++++++++++++++++++++")
-    sh.send_notify()
+    # sh.send_notify()
     sh.logger.info(f"###############本次执行结束###############\n\n")
 
