@@ -462,9 +462,8 @@ if __name__ == "__main__":
         target_category = ""
     sh = AddSht(target_date, target_category)
     sh.logger.info(f"###############本次执行开始###############")
-    # sh.cd2_add()
-    sh.clean_ads()
+    sh.cd2_add()
     sh.logger.info(f"+++++++++++++++++++++++++++++++++++++++++")
-    # sh.send_notify()
+    sh.send_notify()
     sh.logger.info(f"###############本次执行结束###############\n\n")
 
