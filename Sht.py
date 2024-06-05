@@ -94,6 +94,7 @@ for c in sht_ql_config:
     v = os.getenv(c)
     if c == "clean_all" and not v:
         sht_ql_config[c] = False
+        continue
     if v:
         sht_ql_config[c] = v
     else:
