@@ -77,7 +77,6 @@ import re
 import requests
 import json
 import shutil
-import grpcio
 from pymongo import MongoClient, errors
 from datetime import datetime, timedelta
 from clouddrive import CloudDriveClient
@@ -366,12 +365,12 @@ class AddSht:
                 self.cd2.fs.makedirs(save_path, exist_ok=True)
                 try:
                     self.cd2.AddOfflineFiles(AddOfflineFileRequest(urls=torrent_str, toFolder=save_path))
-                except grpc.RpcError as e:
-                    if isinstance(e, grpc.Channel.InactiveRpcError):
-                        print("任务已存在:", e)
-                    else:
-                        print("捕获到RpcError错误:", e)
-                    continue
+                # except grpc.RpcError as e:
+                #     if isinstance(e, grpc.Channel.InactiveRpcError):
+                #         print("任务已存在:", e)
+                #     else:
+                #         print("捕获到RpcError错误:", e)
+                #     continue
                 except Exception as e:
                     print("捕获到异常:", e)
                     continue
