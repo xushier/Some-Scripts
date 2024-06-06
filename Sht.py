@@ -15,6 +15,7 @@ export cd2_pwd=""
 export save_path=""
 export mount_path=""
 export clean_all=""
+export add_link=""
 '''
 
 """通知参数
@@ -75,11 +76,15 @@ import sys
 import re
 import requests
 import json
+import shutil
 from pymongo import MongoClient, errors
 from datetime import datetime, timedelta
 from clouddrive import CloudDriveClient
 from CloudDrive_pb2 import AddOfflineFileRequest
 from __notifier import send
+from concurrent.futures import ThreadPoolExecutor  
+from queue import Queue  
+from threading import Thread 
 
 sht_ql_config = {
     'cd2_url': '',
@@ -87,13 +92,17 @@ sht_ql_config = {
     'cd2_pwd': '',
     'save_path': '',
     'mount_path': '',
-    'clean_all': ''
+    'clean_all': '',
+    'add_link': ''
 }
 
 for c in sht_ql_config:
     v = os.getenv(c)
-    if c == "clean_all" and not v:
+    if c == "clean_all" and v == None:
         sht_ql_config[c] = False
+        continue
+    if c == "add_link" and v == None:
+        sht_ql_config[c] = True
         continue
     if v:
         sht_ql_config[c] = v
@@ -104,56 +113,11 @@ for c in sht_ql_config:
 class AddSht:
 
     def __init__(self, target_date = "", target_category = "", clean_all = sht_ql_config['clean_all']):
-        self.mongodb = MongoClient("mongodb+srv://readonly:cS9NSuiJ1ebHnUL0@cluster0.8mosa.mongodb.net/Cluster0?retryWrites=true&w=majority")
-        try:
-            self.db = self.mongodb["sehuatang"]
-            self.categories = self.db.list_collection_names()
-        except errors.OperationFailure as e:
-            # 捕获 OperationFailure 异常
-            if 'bad auth' in str(e):
-                # 检查错误消息是否包含 "bad auth"
-                print("认证失败，错误信息:", e)
-            else:
-                # 处理其他类型的 OperationFailure 异常
-                print("操作失败，错误信息:", e)
-            self.mongodb.close()
-            sys.exit("数据库连接错误，程序退出！")
-        except Exception as e:
-            # 捕获其他所有异常
-            print("发生了其他错误:", e)
-            self.mongodb.close()
-            sys.exit("数据库连接错误，程序退出！")
-
-        self.cd2_url        = sht_ql_config['cd2_url']
-        self.cd2_usr        = sht_ql_config['cd2_usr']
-        self.cd2_pwd        = sht_ql_config['cd2_pwd']
-        self.save_path      = sht_ql_config['save_path']
-        self.mount_path     = sht_ql_config['mount_path']
-        self.cd2            = CloudDriveClient(self.cd2_url, self.cd2_usr, self.cd2_pwd)
         self.notify_content = []
         self.clean          = clean_all
+        self.mount_path     = sht_ql_config['mount_path']
         self.clean_min_size = 100
-
-        self.category_dict  = {
-            '4k_video': '4K',
-            'anime_originate': '动漫',
-            'asia_codeless_originate': '亚洲无码',
-            'asia_mosaic_originate': '亚洲有码',
-            'domestic_original': '国产原创',
-            'EU_US_no_mosaic': '欧美无码',
-            'hd_chinese_subtitles': '中文字幕',
-            'vegan_with_mosaic': '素人有码',
-            'vr_video': 'VR',
-            'three_levels_photo': '三级'
-        }
-
-        for l in self.category_dict:
-            m = os.getenv(l)
-            if m:
-                self.category_dict[l] = m
-
-        if os.getenv("uhd_video"):
-            self.category_dict['4k_video'] = os.getenv("uhd_video")
+        self.count = 0
 
         # 日志系统的初始化和配置
         log_path     = "sht-log"
@@ -169,13 +133,69 @@ class AddSht:
         logger.setLevel(logging.INFO)
         self.logger = logger
 
-        self.magnets_path    = "sht-magnets"
-        self.target_date     = self.__init_date__(target_date)
-        self.category        = target_category
-        self.target_category = self.__category_judge__()
-        self.magnets_dict    = self.__get_magnet_list__()
+        self.cd2_url        = sht_ql_config['cd2_url']
+        self.cd2_usr        = sht_ql_config['cd2_usr']
+        self.cd2_pwd        = sht_ql_config['cd2_pwd']
+        self.save_path      = sht_ql_config['save_path']
+        self.cd2            = CloudDriveClient(self.cd2_url, self.cd2_usr, self.cd2_pwd)
+        mount_info          = str(self.cd2.GetMountPoints())
+        if "isMounted: true" in mount_info:
+            self.is_mounted = True
+            self.notify_content.append("CD2 挂载正常！")
+        else:
+            print("CloudDrive2 掉挂载！退出脚本")
+            send("CD2 掉挂载！", "如题")
+            sys.exit(1)
 
-        self.filter_file = ["*.exe", "*.mht", "*.mhtml", "*.rar", "*. c o m*.mp4", "*.htm", "*.html", "*.txt", "*.url", "*.jpg", "*.png", "*.docx", "*.doc", "*.zip", "*.apk", "uur76.mp4", "*最 新*.mp4", "*更 新*.mp4", "*直 播*.mp4", "*.nfo"]
+        if sht_ql_config['add_link'] == "true":
+            self.mongodb = MongoClient("mongodb+srv://readonly:cS9NSuiJ1ebHnUL0@cluster0.8mosa.mongodb.net/Cluster0?retryWrites=true&w=majority")
+            try:
+                self.db = self.mongodb["sehuatang"]
+                self.categories = self.db.list_collection_names()
+            except errors.OperationFailure as e:
+                # 捕获 OperationFailure 异常
+                if 'bad auth' in str(e):
+                    # 检查错误消息是否包含 "bad auth"
+                    print("认证失败，错误信息:", e)
+                else:
+                    # 处理其他类型的 OperationFailure 异常
+                    print("操作失败，错误信息:", e)
+                self.mongodb.close()
+                sys.exit("数据库连接错误，程序退出！")
+            except Exception as e:
+                # 捕获其他所有异常
+                print("发生了其他错误:", e)
+                self.mongodb.close()
+                sys.exit("数据库连接错误，程序退出！")
+
+            self.category_dict  = {
+                '4k_video': '4K',
+                'anime_originate': '动漫',
+                'asia_codeless_originate': '亚洲无码',
+                'asia_mosaic_originate': '亚洲有码',
+                'domestic_original': '国产原创',
+                'EU_US_no_mosaic': '欧美无码',
+                'hd_chinese_subtitles': '中文字幕',
+                'vegan_with_mosaic': '素人有码',
+                'vr_video': 'VR',
+                'three_levels_photo': '三级'
+            }
+
+            for l in self.category_dict:
+                m = os.getenv(l)
+                if m:
+                    self.category_dict[l] = m
+
+            if os.getenv("uhd_video"):
+                self.category_dict['4k_video'] = os.getenv("uhd_video")
+
+            self.magnets_path    = "sht-magnets"
+            self.target_date     = self.__init_date__(target_date)
+            self.category        = target_category
+            self.target_category = self.__category_judge__()
+            self.magnets_dict    = self.__get_magnet_list__()
+
+        # self.filter_file = ["*.exe", "*.mht", "*.mhtml", "*.rar", "*. c o m*.mp4", "*.htm", "*.html", "*.txt", "*.url", "*.jpg", "*.png", "*.docx", "*.doc", "*.zip", "*.apk", "uur76.mp4", "*最 新*.mp4", "*更 新*.mp4", "*直 播*.mp4", "*.nfo"]
 
     def __is_valid_date__(self, date_str):
         """
@@ -357,19 +377,39 @@ class AddSht:
                 if len(self.magnets_dict[key]):
                     print(f"追缉到 {len(self.magnets_dict[key])} 个 {category_name} 大姐姐")
                     self.notify_content.append(f"追缉到 {len(self.magnets_dict[key])} 个 {category_name} 大姐姐")
+                else:
+                    self.notify_content.append(f"可恶，{category_name} 大姐姐逃掉了")
                 self.logger.info(f"追缉到 {len(self.magnets_dict[key])} 个 {category_name} 大姐姐")
                 if len(self.magnets_dict[key]) > 0:
-                    print("已添加离线，等待 10 秒")
-                    time.sleep(10)
-                    mount_path = save_path.replace(self.save_path, self.mount_path)
-                    self.clean_ads(mount_path)
+                    print("已添加离线，等待 8 秒")
+                d1t = self.__parse_date__(d) - timedelta(days=1)
+                d2t = self.__parse_date__(d) - timedelta(days=2)
+                d1  = d1t.strftime('%Y-%m-%d')
+                d2  = d2t.strftime('%Y-%m-%d')
+                path_list = [f"{self.mount_path}/SHT/{category_name}/{d}", f"{self.mount_path}/SHT/{category_name}/{d1}", f"{self.mount_path}/SHT/{category_name}/{d2}"]
+                time.sleep(8)
+                total = 0
+                for p in path_list:
+                    if os.path.exists(p):
+                        self.clean_main(p)
+                        total = total + self.count
+                self.logger.info(f"清理 {total} 根丝袜(套)")
+                self.notify_content.append(f"清理 {total} 根丝袜(套)\n")
         else:
             print("本次没有新资源")
-        print(self.clean)
-        if self.clean == True:
-            self.clean_ads()
 
-    def clean_ads(self, clean_path="", min_size_mb=""):
+    def log_writer(self, log_queue):
+        while True:
+            try:
+                log_entry = log_queue.get(block=True)
+                if log_entry is None:
+                    break
+                self.logger.info(log_entry)
+            except Exception as e:
+                if str(e) != 'Empty':
+                    raise
+
+    def clean_ads(self, log_queue, clean_path="", min_size_mb=""):
         """
         清理垃圾文件。
         """
@@ -381,28 +421,38 @@ class AddSht:
         count = 0
         min_size_bytes = min_size_mb * 1024 * 1024
         now = datetime.now()
-        for root, dirs, files in os.walk(clean_path):
+        for root, dirs, files in os.walk(clean_path, topdown=False):
             for f in files:
                 file_path = os.path.join(root, f)
-                if os.path.getsize(file_path) < min_size_bytes:
+                file_size = os.path.getsize(file_path)
+                if file_size < min_size_bytes:
                     try:
                         count += 1
                         os.remove(file_path)
-                        self.logger.info(f"删除文件{count}: {file_path}")
+                        log_queue.put(f"删除文件{count}: {file_path}")
                     except Exception as e:
                         print(f"删除错误：{file_path}: {e}")
-            for d in dirs:
-                full_path = os.path.join(root, d)
-                if os.listdir(full_path):
-                    continue
-                mod_time = datetime.fromtimestamp(os.path.getmtime(full_path))
-                delta = now - mod_time
-                if delta.days > 3:
-                    count += 1
-                    os.rmdir(full_path)
-                    self.logger.info(f"删除文件夹{count}: {full_path}")
-        self.logger.info(f"共清理 {count} 个垃圾文件(夹)")
-        self.notify_content.append(f"共清理 {count} 个垃圾文件(夹)\n")
+            if not dirs and not files:
+                try:
+                    folder_time = os.stat(root).st_mtime
+                    if time.time() - folder_time > 259200:
+                        count += 1
+                        os.rmdir(root)
+                        log_queue.put(f"删除文件夹{count}: {root}")
+                except Exception as e:
+                    log_queue.put(f"删除错误：{root}: {e}")
+        self.count = count
+
+    def clean_main(self, clean_path="", min_size_mb=""):
+        log_queue = Queue()
+        log_thread = Thread(target=self.log_writer, args=(log_queue,))
+        log_thread.start()
+    
+        with ThreadPoolExecutor(max_workers=8) as executor:
+            executor.submit(self.clean_ads, log_queue, clean_path, min_size_mb)
+    
+        log_queue.put(None)
+        log_thread.join()
 
     # def clean_ads(self, path):
     #     """
@@ -449,7 +499,14 @@ if __name__ == "__main__":
         target_category = ""
     sh = AddSht(target_date, target_category)
     sh.logger.info(f"###############本次执行开始###############")
-    sh.cd2_add()
+    if sht_ql_config['add_link'] == "true":
+        sh.cd2_add()
+    if sht_ql_config['clean_all'] == "true":
+        sh.clean_main()
+        count = sh.count
+        sh.logger.info(f"大扫除，共清理 {count} 根丝袜(套)")
+        sh.notify_content.append(f"大扫除，共清理 {count} 根丝袜(套)")
+        print(f"大扫除，共清理 {count} 根丝袜(套)")
     sh.logger.info(f"+++++++++++++++++++++++++++++++++++++++++")
     sh.send_notify()
     sh.logger.info(f"###############本次执行结束###############\n\n")
