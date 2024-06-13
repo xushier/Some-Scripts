@@ -2,9 +2,9 @@
 
 ## 第一次使用建议操作
 1. 青龙添加任务。名称和定时随意。命令填写：`ql repo https://mirror.ghproxy.com/https://github.com/xushier/Some-Scripts.git "xd" "" "__"`。添加后执行一次。
-2. 导入环境变量。可以参照下面的使用说明一个个添加，也可以下载 sht 文件夹的 json 文件，在青龙面板环境变量菜单导入，[json 文件](https://github.com/xushier/Some-Scripts/blob/main/sht/import_vars.json)
+2. 导入环境变量。可以参照下面的使用说明一个个添加，**也可以下载 sht 文件夹的 json 文件，在青龙面板环境变量菜单导入，[json 文件](https://github.com/xushier/Some-Scripts/blob/main/sht/import_vars.json)**
 3. 参照下面的使用说明修改环境变量值。
-4. 可选。在青龙面板依赖管理菜单安装 python3 依赖：requests、pymongo、clouddrive、grpcio。
+4. **可选。**在青龙面板依赖管理菜单安装 python3 依赖：requests、pymongo、clouddrive、grpcio。
 
 ## 使用说明
 需搭配 **青龙面板、CloudDrive** 使用。
@@ -25,7 +25,7 @@
 | mount_path  | 主机的挂载路径         | 必填。为主机挂载路径对应的容器内路径。<br />路径填写至 SHT 上一级即可。如 /mnt/115/SHT，则填 /mnt/115 |
 | add_mode    | 添加模式               | 可选值 1/2，不加默认为 1，即添加后清理局部（三日内）垃圾。<br />2 为仅添加不清理。 |
 | clean_mode  | 清理模式               | 可选值 1/2，不加默认不清理。<br />若为 1 ，则开启全量清理；若为 2，则开启清理局部垃圾。 |
-| XD_QYWX_APP | 企业微信通知相关信息。 | 值同青龙面板的 QYWX_AM 变量。                                |
+| XD_QYWX_APP | 企业微信通知相关信息。 | 值同青龙面板的 QYWX_AM 变量。**五个参数，英文逗号隔开，最后一个为 media_id。** |
 
 6. 任务命令 `task xushier_Some-Scripts/sht/sht.py` 后可传入两个参数。 
    - 第一个为日期。单日：2024-01-01     多日：2024-01-01,2024-01-05    默认：昨日
