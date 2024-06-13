@@ -291,8 +291,8 @@ class AddSht:
                 notify_info[value[1]] = [category_name, len(value[0])]
                 if and_clean:
                     if len(self.magnets_dict[key]) > 0:
-                        print("已添加离线，等待 2 秒···")
-                        time.sleep(2)
+                        print("已添加离线，等待 8 秒···")
+                        time.sleep(8)
                     d1t = self.__parse_date__(d) - timedelta(days=1)
                     d2t = self.__parse_date__(d) - timedelta(days=2)
                     d1  = d1t.strftime('%Y-%m-%d')
