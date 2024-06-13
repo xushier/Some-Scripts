@@ -5,7 +5,7 @@
 1. - 打开青龙面板，添加以下任务。
    - 名称随便输入；
    - 定时规则随便输入，若不知道怎么输入，输入0 0 * * *即可；
-   - 命令/脚本输入：`ql repo https://github.com/xushier/Some-Scripts.git "Sht" "" "__notifier"`
+   - 命令/脚本输入：`ql repo https://mirror.ghproxy.com/https://github.com/xushier/Some-Scripts.git "xd" "" "__"`
 2. 添加后点击右侧按钮运行一次。添加后界面会多出来两个名称分别为 xdSht 和 xdShtClean 的任务。xdSht 是添加并局部清理脚本，每天运行一次即可，建议晚上十点以后运行。xdShtClean 是清理脚本，根据需要可定时全量或局部清理。两个脚本可独立运行。
 3. 进入青龙面板的依赖管理界面，选择 Python3 ，名称输入 pymongo ，确定后等待依赖安装完成。按照以上操作再安装 requests、clouddrive、grpcio。理论上即使不装脚本也会自动安装。
 4. 进入青龙面板的环境变量界面，点击创建变量，依次添加如下变量。也可使用代码同文件夹下的 import_vars.json 文件快速导入变量，注意不要重名了。
