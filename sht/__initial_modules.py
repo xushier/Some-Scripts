@@ -26,7 +26,7 @@ def install_if_needed(module_name):
 install_if_needed('requests')
 install_if_needed('pymongo')
 install_if_needed('clouddrive')
-install_if_needed('grpcio')
+# install_if_needed('grpcio')
 
 import requests
 from pymongo import MongoClient, errors
