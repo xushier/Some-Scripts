@@ -4,7 +4,11 @@
 1. 青龙添加任务。名称和定时随意。命令填写：`ql repo https://mirror.ghproxy.com/https://github.com/xushier/Some-Scripts.git "xd" "" "__"`。添加后执行一次。
 2. 导入环境变量。可以参照下面的使用说明一个个添加，**也可以下载 sht 文件夹的 json 文件，在青龙面板环境变量菜单导入，[json 文件](https://github.com/xushier/Some-Scripts/blob/main/sht/import_vars.json)**
 3. 参照下面的使用说明修改环境变量值。
+<<<<<<< HEAD
 4. 在青龙面板依赖管理菜单安装 python3 依赖：requests、pymongo、clouddrive、grpcio。
+=======
+4. **可选**。在青龙面板依赖管理菜单安装 python3 依赖：requests、pymongo、clouddrive、grpcio。
+>>>>>>> cd6e9d97aefee568fa6536e4ba7c13c837f360ad
 
 ## 使用说明
 需搭配 **青龙面板、CloudDrive** 使用。
