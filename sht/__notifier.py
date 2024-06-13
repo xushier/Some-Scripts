@@ -72,7 +72,7 @@ push_config = {
 
     'XD_QYWX_KEY': '',                  # 企业微信机器人
 
-    'QYWX_PROXY': 'https://qyapi.weixin.qq.com',                   # 企业微信可信代理
+    'XD_QYWX_PROXY': 'https://qyapi.weixin.qq.com',                   # 企业微信可信代理
 
     'TG_BOT_TOKEN': '',                 # tg 机器人的 TG_BOT_TOKEN，例：1407203283:AAG9rt-6RDaaX0HBLZQq0laNOh898iFYaRQ
     'TG_USER_ID': '',                   # tg 机器人的 TG_USER_ID，例：1434078534
@@ -380,7 +380,7 @@ class WeCom:
         self.AGENTID = agentid
 
     def get_access_token(self):
-        url = push_config.get("QYWX_PROXY") + "/cgi-bin/gettoken"
+        url = push_config.get("XD_QYWX_PROXY") + "/cgi-bin/gettoken"
         values = {
             "corpid": self.CORPID,
             "corpsecret": self.CORPSECRET,
@@ -391,7 +391,7 @@ class WeCom:
 
     def send_text(self, message, touser="@all"):
         send_url = (
-            push_config.get("QYWX_PROXY") + "/cgi-bin/message/send?access_token="
+            push_config.get("XD_QYWX_PROXY") + "/cgi-bin/message/send?access_token="
             + self.get_access_token()
         )
         send_values = {
@@ -408,7 +408,7 @@ class WeCom:
 
     def send_mpnews(self, title, message, media_id, digest, touser="@all"):
         send_url = (
-            push_config.get("QYWX_PROXY") + "/cgi-bin/message/send?access_token="
+            push_config.get("XD_QYWX_PROXY") + "/cgi-bin/message/send?access_token="
             + self.get_access_token()
         )
         send_values = {
@@ -443,7 +443,7 @@ def wecom_bot(title: str, content: str, digest="") -> None:
         return
     print("企业微信机器人服务启动")
 
-    url = f"{push_config.get('QYWX_PROXY')}/cgi-bin/webhook/send?key={push_config.get('XD_QYWX_KEY')}"
+    url = f"{push_config.get('XD_QYWX_PROXY')}/cgi-bin/webhook/send?key={push_config.get('XD_QYWX_KEY')}"
     headers = {"Content-Type": "application/json;charset=utf-8"}
     data = {"msgtype": "text", "text": {"content": f"{title}\n\n{content}"}}
     response = requests.post(
