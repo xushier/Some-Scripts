@@ -12,7 +12,7 @@ https://space.bilibili.com/32313260
 from __initial_modules import *
 from __initial_vars import *
 from __notify_templates import add_content
-from Clean import clean_all
+from xdShtClean import clean_all
 
 
 class AddSht:
