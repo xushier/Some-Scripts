@@ -1,0 +1,41 @@
+// [{
+// 	"value": "",
+// 	"name": "XD_QYWX_APP",
+// 	"remarks": "小迪20DM"
+// },
+// {
+// 	"value": "http://",
+// 	"name": "cd2_url",
+// 	"remarks": "小迪20DM"
+// },
+// {
+//     "value": "",
+// 	"name": "cd2_usr",
+// 	"remarks": "小迪20DM"
+// },
+// {
+//     "value": "",
+// 	"name": "cd2_pwd",
+// 	"remarks": "小迪20DM"
+// },
+// {
+//     "value": "/115",
+// 	"name": "save_path",
+// 	"remarks": "小迪20DM"
+// },
+// {
+//     "value": "/",
+// 	"name": "mount_path",
+// 	"remarks": "小迪20DM"
+// },
+[
+{
+    "value": 1,
+	"name": "add_mode",
+	"remarks": "小迪20DM"
+},
+{
+    "value": 2,
+	"name": "clean_mode",
+	"remarks": "小迪20DM"
+}]

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # _*_ coding:utf-8 _*_
+
 import base64
 import hashlib
 import hmac
@@ -9,7 +10,6 @@ import re
 import threading
 import time
 import urllib.parse
-
 import requests
 
 # 原先的 print 函数和主线程的锁
@@ -29,7 +29,7 @@ def print(text, *args, **kw):
 # 通知服务
 # fmt: off
 push_config = {
-    'HITOKOTO': False,                  # 启用一言（随机句子）
+    'HITOKOTO': True,                  # 启用一言（随机句子）
 
     'BARK_PUSH': '',                    # bark IP 或设备码，例：https://api.day.app/DxHcxxxxxRxxxxxxcm/
     'BARK_ARCHIVE': '',                 # bark 推送是否存档
@@ -37,7 +37,7 @@ push_config = {
     'BARK_SOUND': '',                   # bark 推送声音
     'BARK_ICON': '',                    # bark 推送图标
 
-    'CONSOLE': True,                    # 控制台输出
+    'CONSOLE': False,                    # 控制台输出
 
     'DD_BOT_SECRET': '',                # 钉钉机器人的 DD_BOT_SECRET
     'DD_BOT_TOKEN': '',                 # 钉钉机器人的 DD_BOT_TOKEN
@@ -68,9 +68,9 @@ push_config = {
     'QMSG_KEY': '',                     # qmsg 酱的 QMSG_KEY
     'QMSG_TYPE': '',                    # qmsg 酱的 QMSG_TYPE
 
-    'QYWX_AM': '',                      # 企业微信应用
+    'XD_QYWX_APP': '',                  # 企业微信应用
 
-    'QYWX_KEY': '',                     # 企业微信机器人
+    'XD_QYWX_KEY': '',                  # 企业微信机器人
 
     'QYWX_PROXY': 'https://qyapi.weixin.qq.com',                   # 企业微信可信代理
 
@@ -91,7 +91,7 @@ for k in push_config:
         push_config[k] = v
 
 
-def bark(title: str, content: str) -> None:
+def bark(title: str, content: str, digest="") -> None:
     """
     使用 bark 推送消息。
     """
@@ -130,14 +130,14 @@ def bark(title: str, content: str) -> None:
         print("bark 推送失败！")
 
 
-def console(title: str, content: str) -> None:
+def console(title: str, content: str, digest="") -> None:
     """
     使用 控制台 推送消息。
     """
     print(f"{title}\n\n{content}")
 
 
-def dingding_bot(title: str, content: str) -> None:
+def dingding_bot(title: str, content: str, digest="") -> None:
     """
     使用 钉钉机器人 推送消息。
     """
@@ -167,7 +167,7 @@ def dingding_bot(title: str, content: str) -> None:
         print("钉钉机器人 推送失败！")
 
 
-def feishu_bot(title: str, content: str) -> None:
+def feishu_bot(title: str, content: str, digest="") -> None:
     """
     使用 飞书机器人 推送消息。
     """
@@ -186,7 +186,7 @@ def feishu_bot(title: str, content: str) -> None:
         print("飞书 推送失败！错误信息如下：\n", response)
 
 
-def go_cqhttp(title: str, content: str) -> None:
+def go_cqhttp(title: str, content: str, digest="") -> None:
     """
     使用 go_cqhttp 推送消息。
     """
@@ -204,7 +204,7 @@ def go_cqhttp(title: str, content: str) -> None:
         print("go-cqhttp 推送失败！")
 
 
-def gotify(title:str,content:str)  -> None:
+def gotify(title: str, content: str, digest="")  -> None:
     """
     使用 gotify 推送消息。
     """
@@ -223,7 +223,7 @@ def gotify(title:str,content:str)  -> None:
         print("gotify 推送失败！")
 
 
-def iGot(title: str, content: str) -> None:
+def iGot(title: str, content: str, digest="") -> None:
     """
     使用 iGot 推送消息。
     """
@@ -243,7 +243,7 @@ def iGot(title: str, content: str) -> None:
         print(f'iGot 推送失败！{response["errMsg"]}')
 
 
-def serverJ(title: str, content: str) -> None:
+def serverJ(title: str, content: str, digest="") -> None:
     """
     通过 serverJ 推送消息。
     """
@@ -265,7 +265,7 @@ def serverJ(title: str, content: str) -> None:
         print(f'serverJ 推送失败！错误码：{response["message"]}')
 
 
-def pushdeer(title: str, content: str) -> None:
+def pushdeer(title: str, content: str, digest="") -> None:
     """
     通过PushDeer 推送消息
     """
@@ -283,14 +283,14 @@ def pushdeer(title: str, content: str) -> None:
         print("PushDeer 推送失败！错误信息：", response)
     
 
-def pushplus_bot(title: str, content: str) -> None:
+def pushplus_bot(title: str, content: str, digest="") -> None:
     """
     通过 push+ 推送消息。
     """
     if not push_config.get("PUSH_PLUS_TOKEN"):
         print("PUSHPLUS 服务的 PUSH_PLUS_TOKEN 未设置!!\n取消推送")
         return
-    print("PUSHPLUS 服务启动")
+    # print("PUSHPLUS 服务启动")
 
     url = "http://www.pushplus.plus/send"
     data = {
@@ -319,7 +319,7 @@ def pushplus_bot(title: str, content: str) -> None:
             print("PUSHPLUS 推送失败！")
 
 
-def qmsg_bot(title: str, content: str) -> None:
+def qmsg_bot(title: str, content: str, digest="") -> None:
     """
     使用 qmsg 推送消息。
     """
@@ -338,34 +338,34 @@ def qmsg_bot(title: str, content: str) -> None:
         print(f'qmsg 推送失败！{response["reason"]}')
 
 
-def wecom_app(title: str, content: str) -> None:
+def wecom_app(title: str, content: str, digest="") -> None:
     """
     通过 企业微信 APP 推送消息。
     """
-    if not push_config.get("QYWX_AM"):
-        print("QYWX_AM 未设置!!\n取消推送")
+    if not push_config.get("XD_QYWX_APP"):
+        print("XD_QYWX_APP 未设置!!\n取消推送")
         return
-    QYWX_AM_AY = re.split(",", push_config.get("QYWX_AM"))
-    if 4 < len(QYWX_AM_AY) > 5:
-        print("QYWX_AM 设置错误!!\n取消推送")
+    XD_QYWX_APP_AY = re.split(",", push_config.get("XD_QYWX_APP"))
+    if 4 < len(XD_QYWX_APP_AY) > 5:
+        print("XD_QYWX_APP 设置错误!!\n取消推送")
         return
-    print("企业微信 APP 服务启动")
+    # print("企业微信 APP 服务启动")
 
-    corpid = QYWX_AM_AY[0]
-    corpsecret = QYWX_AM_AY[1]
-    touser = QYWX_AM_AY[2]
-    agentid = QYWX_AM_AY[3]
+    corpid = XD_QYWX_APP_AY[0]
+    corpsecret = XD_QYWX_APP_AY[1]
+    touser = XD_QYWX_APP_AY[2]
+    agentid = XD_QYWX_APP_AY[3]
     try:
-        media_id = QYWX_AM_AY[4]
+        media_id = XD_QYWX_APP_AY[4]
     except IndexError:
         media_id = ""
     wx = WeCom(corpid, corpsecret, agentid)
     # 如果没有配置 media_id 默认就以 text 方式发送
-    if not media_id:
-        message = title + "\n\n" + content
-        response = wx.send_text(message, touser)
+    if media_id and digest:
+        response = wx.send_mpnews(title, content, media_id, digest, touser)
     else:
-        response = wx.send_mpnews(title, content, media_id, touser)
+        message = title + "\n\n" + content
+        response = wx.send_text(message, touser) 
 
     if response == "ok":
         print("企业微信推送成功！")
@@ -406,7 +406,7 @@ class WeCom:
         respone = respone.json()
         return respone["errmsg"]
 
-    def send_mpnews(self, title, message, media_id, touser="@all"):
+    def send_mpnews(self, title, message, media_id, digest, touser="@all"):
         send_url = (
             push_config.get("QYWX_PROXY") + "/cgi-bin/message/send?access_token="
             + self.get_access_token()
@@ -420,10 +420,10 @@ class WeCom:
                     {
                         "title": title,
                         "thumb_media_id": media_id,
-                        "author": "Author",
+                        "author": "小迪",
                         "content_source_url": "",
-                        "content": message.replace("\n", "<br/>"),
-                        "digest": message,
+                        "content": message,
+                        "digest": digest,
                     }
                 ]
             },
@@ -434,16 +434,16 @@ class WeCom:
         return respone["errmsg"]
 
 
-def wecom_bot(title: str, content: str) -> None:
+def wecom_bot(title: str, content: str, digest="") -> None:
     """
     通过 企业微信机器人 推送消息。
     """
-    if not push_config.get("QYWX_KEY"):
-        print("企业微信机器人 服务的 QYWX_KEY 未设置!!\n取消推送")
+    if not push_config.get("XD_QYWX_KEY"):
+        print("企业微信机器人 服务的 XD_QYWX_KEY 未设置!!\n取消推送")
         return
     print("企业微信机器人服务启动")
 
-    url = f"{push_config.get('QYWX_PROXY')}/cgi-bin/webhook/send?key={push_config.get('QYWX_KEY')}"
+    url = f"{push_config.get('QYWX_PROXY')}/cgi-bin/webhook/send?key={push_config.get('XD_QYWX_KEY')}"
     headers = {"Content-Type": "application/json;charset=utf-8"}
     data = {"msgtype": "text", "text": {"content": f"{title}\n\n{content}"}}
     response = requests.post(
@@ -456,7 +456,7 @@ def wecom_bot(title: str, content: str) -> None:
         print("企业微信机器人推送失败！")
 
 
-def telegram_bot(title: str, content: str) -> None:
+def telegram_bot(title: str, content: str, digest="") -> None:
     """
     使用 telegram 机器人 推送消息。
     """
@@ -508,7 +508,7 @@ def one() -> str:
     """
     url = "https://v1.hitokoto.cn/"
     res = requests.get(url).json()
-    return res["hitokoto"] + "    ----" + res["from"]
+    return res["hitokoto"], res["from"]
 
 
 if push_config.get("BARK_PUSH"):
@@ -533,26 +533,33 @@ if push_config.get("PUSH_PLUS_TOKEN"):
     notify_function.append(pushplus_bot)
 if push_config.get("QMSG_KEY") and push_config.get("QMSG_TYPE"):
     notify_function.append(qmsg_bot)
-if push_config.get("QYWX_AM"):
+if push_config.get("XD_QYWX_APP"):
     notify_function.append(wecom_app)
-if push_config.get("QYWX_KEY"):
+if push_config.get("XD_QYWX_KEY"):
     notify_function.append(wecom_bot)
 if push_config.get("TG_BOT_TOKEN") and push_config.get("TG_USER_ID"):
     notify_function.append(telegram_bot)
 
 
-def send(title: str, content: str) -> None:
+def send(title: str, content: str, digest="") -> None:
     if not content:
         print(f"{title} 推送内容为空！")
         return
-
-    hitokoto = push_config.get("HITOKOTO")
-
-    text = one() if hitokoto else ""
-    content += "\n\n" + text
+    if digest:
+        hitokoto = push_config.get("HITOKOTO")
+        text = one() if hitokoto else ""
+        text1, text2 = text[0], text[1]
+        content += f"""
+            <tr style="border: 1px solid #a35c8f;background-color: #894276;color: white;">
+                <td colspan="3" style="padding: 8px;padding-left: 15px;padding-right: 15px;"><p style="text-align: left;">{text1}</p><p style="text-align: right;">———{text2}</p></td>
+            </tr>
+            </table>
+        """
+    else:
+        content += ""
 
     ts = [
-        threading.Thread(target=mode, args=(title, content), name=mode.__name__)
+        threading.Thread(target=mode, args=(title, content, digest), name=mode.__name__)
         for mode in notify_function
     ]
     [t.start() for t in ts]
