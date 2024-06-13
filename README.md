@@ -1,5 +1,11 @@
 ## 获取磁力并提交到 115 离线，清理垃圾。
 
+## 第一次使用建议操作
+1. 青龙添加任务。名称和定时随意。命令填写：`ql repo https://mirror.ghproxy.com/https://github.com/xushier/Some-Scripts.git "xd" "" "__"`。添加后执行一次。
+2. 导入环境变量。可以参照下面的使用说明一个个添加，也可以下载 sht 文件夹的 json 文件，在青龙面板环境变量菜单导入，[json 文件](https://github.com/xushier/Some-Scripts/blob/main/sht/import_vars.json)
+3. 参照下面的使用说明修改环境变量值。
+4. 可选。在青龙面板依赖管理菜单安装 python3 依赖：requests、pymongo、clouddrive、grpcio。
+
 ## 使用说明
 需搭配 **青龙面板、CloudDrive** 使用。
 1. - 打开青龙面板，添加以下任务。
