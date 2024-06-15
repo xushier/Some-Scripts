@@ -20,11 +20,16 @@ def add_content(cd2, add, date):
             <th style="padding: 8px;padding-top: 12px;padding-bottom: 12px;">可用</th>
         </tr>
         <tr style="border: 1px solid #a35c8f;background-color: #894276;color: white;">
+            <td style="padding: 8px;">配额</td>
+            <td style="padding: 8px;">{cd2['quota_used']}</td>
+            <td style="padding: 8px;">{cd2['quota_free']}</td>
+        </tr>
+        <tr style="border: 1px solid #a35c8f;background-color: #7e2065;color: white;">
             <td style="padding: 8px;">{cd2['mount']}</td>
             <td style="padding: 8px;">{cd2['used']}</td>
             <td style="padding: 8px;">{cd2['free']}</td>
         </tr>
-        <tr style="border: 1px solid #a35c8f;background-color: #7e2065;color: white;font-size: 13px;">
+        <tr style="border: 1px solid #a35c8f;background-color: #894276;color: white;font-size: 13px;">
             <td colspan="3" style="padding: 8px;">当前版本：{cd2['nowVersion']} {cd2['hasUpdate']} {cd2['newVersion']}<br>{cd2['updateLog']}</td>
         </tr>
         <tr style="border: 1px solid #a35c8f;background-color: #681752;color: white;font-size: 16px;">
