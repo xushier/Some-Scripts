@@ -92,11 +92,23 @@ class AddSht:
         nowVersion  = run_info.productVersion.split(" ")[0]
         info['nowVersion'] = nowVersion
 
+        if sht_config['account_id']:
+            ol_quota = self.cd2.ListAllOfflineFiles(OfflineFileListAllRequest(cloudName="115", cloudAccountId=account_id)).status
+        else:
+            ol_quota = False
+
         if mounted:
             info['mount'] = "已挂载"
             info['used']  = f"{used_space} TB"
             info['free']  = f"{free_space} TB"
-            info['nowVersion'] = nowVersion
+            info['nowVersion']  = nowVersion
+            if ol_quota and sht_config['account_id']:
+                info['quota_used']  = ol_quota.quota
+                info['quota_total'] = ol_quota.total
+                info['quota_free']  = ol_quota.total - ol_quota.quota
+            else:
+                info['quota_used']  = "未指定账户"
+                info['quota_free']  = "未指定账户"
         if hasUpdate:
             info['hasUpdate']  = "有新版本"
             info['newVersion'] = newVersion
@@ -317,8 +329,8 @@ if __name__ == "__main__":
         sh = AddSht()
         sh.logger.info(f"###############本次执行开始###############")
         info = sh.cd2_add()
-        print(info)
-        print(sh.cd2_info)
+        # print(info)
+        # print(sh.cd2_info)
         info_data, total_add, total_clean = add_content(sh.cd2_info, info[0], info[1])
         digest = f"✅本次共添加 {total_add} 个，删除 {total_clean} 个。\n✅CD2 挂载正常。"
         send("大姐姐诱捕器", info_data, digest)
