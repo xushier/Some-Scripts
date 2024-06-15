@@ -57,14 +57,14 @@ def clean_ads(log_queue, clean_path = "", min_size_mb = ""):
                     print(f"删除错误：{file_path}: {e}")
         if not dirs and not files:
             try:
-                # folder_time = os.stat(root).st_mtime
-                # if time.time() - folder_time > 259200:
-                #     count += 1
-                #     os.rmdir(root)
-                #     log_queue.put(f"删除文件夹{count}: {root}")
-                count += 1
-                os.rmdir(root)
-                log_queue.put(f"删除文件夹{count}: {root}")
+                folder_time = os.stat(root).st_mtime
+                if time.time() - folder_time > 172800:
+                    count += 1
+                    os.rmdir(root)
+                    log_queue.put(f"删除文件夹{count}: {root}")
+                # count += 1
+                # os.rmdir(root)
+                # log_queue.put(f"删除文件夹{count}: {root}")
             except Exception as e:
                 log_queue.put(f"删除错误：{root}: {e}")
     return count
