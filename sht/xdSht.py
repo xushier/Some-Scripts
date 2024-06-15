@@ -331,8 +331,9 @@ if __name__ == "__main__":
         info = sh.cd2_add()
         # print(info)
         # print(sh.cd2_info)
+        sh.logger.info(f"{info}\n\n{sh.cd2_info}")
         info_data, total_add, total_clean = add_content(sh.cd2_info, info[0], info[1])
         digest = f"✅本次共添加 {total_add} 个，删除 {total_clean} 个。\n✅CD2 挂载正常。"
         send("大姐姐诱捕器", info_data, digest)
-    sh.logger.info(f"###############本次执行结束###############\n\n")
+        sh.logger.info(f"###############本次执行结束###############\n\n")
 
