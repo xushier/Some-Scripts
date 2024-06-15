@@ -93,7 +93,7 @@ class AddSht:
         info['nowVersion'] = nowVersion
 
         if sht_config['account_id']:
-            ol_quota = self.cd2.ListAllOfflineFiles(OfflineFileListAllRequest(cloudName="115", cloudAccountId=account_id)).status
+            ol_quota = self.cd2.ListAllOfflineFiles(OfflineFileListAllRequest(cloudName="115", cloudAccountId=sht_config['account_id'])).status
         else:
             ol_quota = False
 
