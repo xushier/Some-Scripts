@@ -31,7 +31,7 @@ install_if_needed('clouddrive')
 import requests
 from pymongo import MongoClient, errors
 from clouddrive import CloudDriveClient
-from CloudDrive_pb2 import AddOfflineFileRequest, FileRequest
+from CloudDrive_pb2 import AddOfflineFileRequest, FileRequest, OfflineFileListAllRequest
 from __notifier import send
 
 
