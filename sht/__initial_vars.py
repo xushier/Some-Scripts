@@ -69,7 +69,8 @@ sht_config = {
     'save_path': '',
     'mount_path': '',
     'add_mode': '',
-    'clean_mode': ''
+    'clean_mode': '',
+    'account_id': ''
 }
 
 for c in sht_config:
@@ -92,6 +93,9 @@ for c in sht_config:
         continue
     if c == "clean_mode" and v == None:
         all_clean, part_clean = 0, 0
+        continue
+    if c == "account_id" and v == None:
+        sht_config[c] = False
         continue
     if v:
         sht_config[c] = v
