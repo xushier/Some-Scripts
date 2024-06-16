@@ -103,9 +103,9 @@ class AddSht:
             info['free']  = f"{free_space} TB"
             info['nowVersion']  = nowVersion
             if ol_quota and sht_config['account_id']:
-                info['quota_used']  = ol_quota.quota
+                info['quota_free']  = ol_quota.quota
                 info['quota_total'] = ol_quota.total
-                info['quota_free']  = ol_quota.total - ol_quota.quota
+                info['quota_used']  = ol_quota.total - ol_quota.quota
             else:
                 info['quota_used']  = "未指定账户"
                 info['quota_free']  = "未指定账户"
