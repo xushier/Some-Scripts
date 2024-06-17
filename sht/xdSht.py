@@ -289,20 +289,21 @@ class AddSht:
         if self.magnets_dict:
             for key, value in self.magnets_dict.items():
                 category_name = key
-                torrent_str   = "\n".join(value[0])
-                save_path = f"{self.save_path}/SHT/{category_name}/{d}"
-                self.cd2.fs.makedirs(save_path, exist_ok=True)
-                try:
-                    r = self.cd2.AddOfflineFiles(AddOfflineFileRequest(urls=torrent_str, toFolder=save_path))
-                    if not r.success:
-                        self.logger.info(f"添加离线失败，原因：{r.errorMessage}")
-                except Exception as e:
-                    print("捕获到异常，已忽略:", e)
-                    continue
                 print(f"{category_name}，共 {len(value[0])} 个")
                 notify_info[value[1]] = [category_name, len(value[0])]
+                if len(value[0]):
+                    torrent_str   = "\n".join(value[0])
+                    save_path = f"{self.save_path}/SHT/{category_name}/{d}"
+                    self.cd2.fs.makedirs(save_path, exist_ok=True)
+                    try:
+                        r = self.cd2.AddOfflineFiles(AddOfflineFileRequest(urls=torrent_str, toFolder=save_path))
+                        if not r.success:
+                            self.logger.info(f"添加离线失败，原因：{r.errorMessage}")
+                    except Exception as e:
+                        print("捕获到异常，已忽略:", e)
+                        continue
                 if and_clean:
-                    if len(self.magnets_dict[key]) > 0:
+                    if len(value[0]):
                         print("已添加离线，等待 8 秒···")
                         time.sleep(8)
                     d1t = self.__parse_date__(d) - timedelta(days=1)
