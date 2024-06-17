@@ -299,6 +299,7 @@ class AddSht:
                         r = self.cd2.AddOfflineFiles(AddOfflineFileRequest(urls=torrent_str, toFolder=save_path))
                         if not r.success:
                             self.logger.info(f"添加离线失败，原因：{r.errorMessage}")
+                        pass
                     except Exception as e:
                         print("捕获到异常，已忽略:", e)
                         continue
@@ -323,6 +324,8 @@ class AddSht:
             return notify_info, d
         else:
             print("本次没有新资源")
+            send("没有新资源", "本次没有新资源")
+            sys.exit(0)
 
 
 if __name__ == "__main__":
@@ -330,8 +333,8 @@ if __name__ == "__main__":
         sh = AddSht()
         sh.logger.info(f"###############本次执行开始###############")
         info = sh.cd2_add()
-        # print(info)
-        # print(sh.cd2_info)
+        print(info)
+        print(sh.cd2_info)
         sh.logger.info(f"{info}\n\n{sh.cd2_info}")
         info_data, total_add, total_clean = add_content(sh.cd2_info, info[0], info[1])
         digest = f"✅本次共添加 {total_add} 个，删除 {total_clean} 个。\n✅CD2 挂载正常。"
