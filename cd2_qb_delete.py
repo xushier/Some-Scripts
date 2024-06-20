@@ -70,6 +70,7 @@ class Qb:
         """
         return self.qb.get_torrent_trackers(infohash)
 
+
     def can_delete(self):
         """
         删除满足条件的种子。
@@ -93,9 +94,11 @@ class Qb:
                     continue
                 print(f"可删, {size} GB, 做种 {seeding_time} 小时, {t['tags']}, {t['category']}")
                 hash_list.add(t['hash'])
-        if len(hash_list):
+        count = len(hash_list)
+        if count:
             self.delete_true(list(hash_list))
-            return len(hash_list)
+            print(f"本次删除 {count} 个可删除种子")
+            return count
         else:
             print("本次运行没有检测到可以删除的种子。")
             return 0
@@ -118,9 +121,11 @@ class Qb:
                 size = t['size'] // 1073741824
                 print(f"种子已失效, {size} GB, 进度：{progress} %, 服务器信息：{infotracker}")
                 hash_list.add(infohash)
-        if len(hash_list):
+        count = len(hash_list)
+        if count:
             self.delete_true(list(hash_list))
-            return len(hash_list)
+            print(f"本次删除 {count} 个可删除种子")
+            return count
         else:
             print("本次运行没有检测到已失效的种子。")
             return 0
@@ -128,10 +133,6 @@ class Qb:
 
 
 s = Qb()
-c = s.can_delete()
-e = s.delete_error()
-if c:
-    print(f"本次删除 {c} 个可删除种子")
-if e:
-    print(f"本次删除 {e} 个已失效种子")
+s.can_delete()
+s.delete_error()
 
