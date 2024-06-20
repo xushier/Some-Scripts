@@ -63,31 +63,75 @@ class Qb:
 
         """
         return self.qb.delete_permanently(infohash_list)
-    
+
+    def get_trackers(self, infohash):
+        """
+        获取指定种子 Tracker 信息。
+        """
+        return self.qb.get_torrent_trackers(infohash)
+
     def can_delete(self):
         """
         删除满足条件的种子。
 
         """
+        print("----------删除可删种子----------")
         ts = self.qb_torrents()
+        # print(ts)
         hash_list = set()
         for t in ts:
             if "可删" in t['category']:
                 name = t['category'].split("-")[3]
                 seeding_time = t['seeding_time'] // 3600
+                size = t['size'] // 1073741824
                 if "chdbits" in t['tracker'] or "chdbits" in t['magnet_uri'] or "CHD" in t['tags']:
                     if seeding_time <= 8640:
-                        print(f"彩虹岛，{t['category']}, 做种 {seeding_time} 小时，不足 6 天，暂不删除")
+                        # print(f"彩虹岛，{t['tags']}，{t['category']}, 做种 {seeding_time} 小时，不足 6 天，暂不删除")
                         continue
                 if re.search(r'^[a-zA-Z]$', name) and not re.search(r'[\u4e00-\u9fff]', name):
                     print(f"片名：{name}，可能识别错误，暂不删除")
                     continue
-                print(f"可删, {t['category']}")
+                print(f"可删, {size} GB, 做种 {seeding_time} 小时, {t['tags']}, {t['category']}")
                 hash_list.add(t['hash'])
         if len(hash_list):
             self.delete_true(list(hash_list))
             return len(hash_list)
+        else:
+            print("本次运行没有检测到可以删除的种子。")
+            return 0
 
 
-s = Qb().can_delete()
-print(f"本次删除 {s} 个")
+    def delete_error(self):
+        """
+        删除已失效的种子。
+
+        """
+        print("\n----------删除失效种子----------")
+        ts = self.qb_torrents(stat='downloading')
+        # print(ts)
+        hash_list = set()
+        for t in ts:
+            infohash = t['hash']
+            progress = round(t['progress'] * 100, 2)
+            infotracker = self.get_trackers(infohash)[-1]['msg']
+            if 'exist' in infotracker or 'anned' in infotracker or 'register' in infotracker:
+                size = t['size'] // 1073741824
+                print(f"种子已失效, {size} GB, 进度：{progress} %, 服务器信息：{infotracker}")
+                hash_list.add(infohash)
+        if len(hash_list):
+            self.delete_true(list(hash_list))
+            return len(hash_list)
+        else:
+            print("本次运行没有检测到已失效的种子。")
+            return 0
+
+
+
+s = Qb()
+c = s.can_delete()
+e = s.delete_error()
+if c:
+    print(f"本次删除 {c} 个可删除种子")
+if e:
+    print(f"本次删除 {e} 个已失效种子")
+
