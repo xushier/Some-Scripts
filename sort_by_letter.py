@@ -1,4 +1,5 @@
 import os
+import re
 import shutil
 from pypinyin import pinyin, Style
   
@@ -11,21 +12,23 @@ def to_pinyin(chinese_text, style=Style.NORMAL):
     """
     return ' '.join([''.join(p for p_list in pinyin(char, style=style) for p in p_list) for char in chinese_text])
 
-
-source_path = "/mnt/cacheqb/Download/test"
-dest_path   = "/mnt/cacheqb/Download/test1"
-
 def move(source_path, dest_path):
-    # 移动源目录下文件或文件夹到首字母目标目录下
+    """
+    移动源目录下文件或文件夹到首字母目标目录下
+    """
     for sub_name in os.listdir(source_path):
         sub_path     = os.path.join(source_path, sub_name)
         first_letter = to_pinyin(sub_name, style=Style.INITIALS)[0].upper()
+        if re.findall(r'[^a-zA-Z0-9]', first_letter):
+            first_letter = "#"
         letter_path  = os.path.join(dest_path, first_letter)
-
-        if not os.path.exists(letter_path):
-            os.makedirs(letter_path)
+        os.makedirs(letter_path, exist_ok=True)
         shutil.move(sub_path, letter_path)
         print(f"移动 {sub_name} 到 {letter_path}")
+
+
+source_path = "/mnt/cacheqb/Download/test"
+dest_path   = "/mnt/cacheqb/Download/test1"
 
 move(source_path, dest_path)
 
