@@ -301,6 +301,10 @@ class AddSht:
                             self.logger.info(f"添加离线失败，原因：{r.errorMessage}")
                         pass
                     except Exception as e:
+                        if "配额已用完" in str(e):
+                            send("大姐姐诱捕器", "配额已用完")
+                            print("捕获到异常，已忽略:", e)
+                            sys.exit(1)
                         print("捕获到异常，已忽略:", e)
                         continue
                 if and_clean:
