@@ -3,7 +3,6 @@
 """
 name: 全量链接
 cron: 0 8,18,20 * * *
-enabled: false
 """
 import os
 import shutil
