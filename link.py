@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 # _*_ coding:utf-8 _*_
 """
-name: 全量链接
-cron: 0 8,18,20 * * *
+全量链接
+name: link.py
+定时规则
+cron: 1 9 * * *
 """
 import os
 import shutil
