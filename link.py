@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 # _*_ coding:utf-8 _*_
 """
-全量链接
-name: link.py
-定时规则
-cron: 1 9 * * *
+new Env('小迪 - 环境检测');
+cron: 30 9,21 * * * check.py
 """
 import os
 import shutil
