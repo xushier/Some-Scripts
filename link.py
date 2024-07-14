@@ -2,7 +2,7 @@
 # _*_ coding:utf-8 _*_
 """
 new Env('小迪 - 环境检测');
-30 9 * * * link.py enabled=false
+30 9 * * * link.py,enabled=false
 """
 import os
 import shutil
